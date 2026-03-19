@@ -1,35 +1,37 @@
 import { NextResponse } from 'next/server'
-import crypto from 'crypto'
 
-function hashToken(value) {
-  return crypto.createHash('sha256').update(value).digest('hex')
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json).*)'],
+  runtime: 'experimental-edge',
 }
 
-export function middleware(request) {
+async function sha256(message) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+export async function middleware(request) {
   const { pathname } = request.nextUrl
 
-  // La ruta de login siempre es pública
+  // Rutas siempre públicas
   if (pathname === '/login' || pathname === '/api/login') {
     return NextResponse.next()
   }
 
   const sessionCookie = request.cookies.get('session')?.value
-  const expectedToken = hashToken(
-    process.env.APP_PASSWORD + process.env.SESSION_SECRET
+  const expectedToken = await sha256(
+    (process.env.APP_PASSWORD || '') + (process.env.SESSION_SECRET || '')
   )
 
   if (!sessionCookie || sessionCookie !== expectedToken) {
-    // Si es una llamada a la API, devolver 401
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
-    // Si es una página, redirigir al login
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return NextResponse.next()
-}
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json).*)'],
 }
