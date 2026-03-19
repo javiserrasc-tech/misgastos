@@ -7,6 +7,8 @@ const MESES = [
   'julio','agosto','septiembre','octubre','noviembre','diciembre'
 ]
 
+const COLOR_DEFAULT = '#e8e8ed'
+
 function parseValor(val) {
   if (!val) return 0
   return parseFloat(String(val).replace(',', '.')) || 0
@@ -22,6 +24,64 @@ function validarAnio(val) {
   if (!/^\d{4}$/.test(val)) return 'Debe tener 4 dígitos'
   if (!val.startsWith('20')) return 'Debe empezar por 20'
   return ''
+}
+
+function ConceptoDropdown({ conceptos, grupoMap, value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const selected = conceptos.find(c => c.nombre === value)
+  const color = selected ? (grupoMap[selected.nombre] || COLOR_DEFAULT) : COLOR_DEFAULT
+
+  return (
+    <div className="custom-select" ref={ref}>
+      <button
+        type="button"
+        className={`custom-select__trigger ${open ? 'custom-select__trigger--open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        {value ? (
+          <>
+            <span className="custom-select__dot" style={{ background: color }} />
+            <span className="custom-select__label">{value}</span>
+          </>
+        ) : (
+          <span className="custom-select__placeholder">— Elige un concepto —</span>
+        )}
+        <span className="custom-select__arrow">▾</span>
+      </button>
+
+      {open && (
+        <ul className="custom-select__list" role="listbox">
+          {conceptos.map(c => {
+            const c_color = grupoMap[c.nombre] || COLOR_DEFAULT
+            return (
+              <li
+                key={c.id}
+                role="option"
+                aria-selected={c.nombre === value}
+                className={`custom-select__option ${c.nombre === value ? 'custom-select__option--selected' : ''}`}
+                onClick={() => { onChange(c.nombre); setOpen(false) }}
+              >
+                <span className="custom-select__dot" style={{ background: c_color }} />
+                <span>{c.nombre}</span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 export default function Home() {
@@ -191,21 +251,12 @@ export default function Home() {
               {/* Concepto */}
               <div className="field">
                 <label className="label" htmlFor="concepto">Concepto</label>
-                <div className="select-wrap">
-                  <select
-                    id="concepto"
-                    className="select"
-                    value={form.concepto}
-                    onChange={e => setField('concepto', e.target.value)}
-                    required
-                  >
-                    <option value="">— Elige un concepto —</option>
-                    {conceptos.map(c => (
-                      <option key={c.id} value={c.nombre}>{c.nombre}</option>
-                    ))}
-                  </select>
-                  <span className="select-arrow">▾</span>
-                </div>
+                <ConceptoDropdown
+                  conceptos={conceptos}
+                  grupoMap={grupoMap}
+                  value={form.concepto}
+                  onChange={v => setField('concepto', v)}
+                />
               </div>
 
               {/* Valor */}
