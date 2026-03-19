@@ -71,9 +71,10 @@ function ConceptoDropdown({ conceptos, grupoMap, value, onChange }) {
                 role="option"
                 aria-selected={c.nombre === value}
                 className={`custom-select__option ${c.nombre === value ? 'custom-select__option--selected' : ''}`}
+                style={{ borderLeftColor: c_color }}
                 onClick={() => { onChange(c.nombre); setOpen(false) }}
               >
-                <span className="custom-select__dot" style={{ background: c_color }} />
+                <span className="custom-select__dot" style={{ background: c_color, width: '10px', height: '10px', borderRadius: '3px' }} />
                 <span>{c.nombre}</span>
               </li>
             )
