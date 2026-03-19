@@ -54,15 +54,15 @@ export default async function handler(req, res) {
       }
 
       const id = uuidv4().replace(/-/g, '').slice(0, 8)
-      const valorFormateado = String(valor).replace('.', ',')
+      const valorNumerico = parseFloat(String(valor).replace(',', '.')) || 0
 
       await sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,
         range: `${SHEET_TAB}!A:F`,
-        valueInputOption: 'RAW',
+        valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [[id, concepto, valorFormateado, comentario || '', mes, String(anio)]],
+          values: [[id, concepto, valorNumerico, comentario || '', mes, Number(anio)]],
         },
       })
 
@@ -90,15 +90,15 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: `No se encontró la fila con ID: ${id}` })
       }
 
-      const sheetRow = rowIndex + 1 // Google Sheets es 1-indexed
-      const valorFormateado = String(valor).replace('.', ',')
+      const sheetRow = rowIndex + 1
+      const valorNumerico = parseFloat(String(valor).replace(',', '.')) || 0
 
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${SHEET_TAB}!A${sheetRow}:F${sheetRow}`,
-        valueInputOption: 'RAW',
+        valueInputOption: 'USER_ENTERED',
         requestBody: {
-          values: [[id, concepto, valorFormateado, comentario || '', mes, String(anio)]],
+          values: [[id, concepto, valorNumerico, comentario || '', mes, Number(anio)]],
         },
       })
 
