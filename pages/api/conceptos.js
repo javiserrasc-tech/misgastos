@@ -20,12 +20,12 @@ export default async function handler(req, res) {
     const sheets = await getSheets()
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'Conceptos!A2:B200',
+      range: 'Conceptos!A2:C200',
     })
 
     const rows = response.data.values || []
     const conceptos = rows
-      .map(row => ({ id: row[0] || '', nombre: row[1] || '' }))
+      .map(row => ({ id: row[0] || '', nombre: row[1] || '', grupo: row[2] || '' }))
       .filter(c => c.nombre.trim() !== '')
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
 
