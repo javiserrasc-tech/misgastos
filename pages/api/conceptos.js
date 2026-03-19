@@ -16,11 +16,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const secret = req.headers['x-api-secret']
-  if (!secret || secret !== process.env.API_SECRET) {
-    return res.status(401).json({ error: 'No autorizado' })
-  }
-
   try {
     const sheets = await getSheets()
     const response = await sheets.spreadsheets.values.get({
