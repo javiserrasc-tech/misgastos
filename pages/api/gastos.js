@@ -53,7 +53,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Faltan campos obligatorios' })
       }
 
-      const id = uuidv4().replace(/-/g, '').slice(0, 8) // ID corto tipo los que ya tienes
+      const id = uuidv4().replace(/-/g, '').slice(0, 8)
+      const valorFormateado = String(valor).replace('.', ',')
 
       await sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         requestBody: {
-          values: [[id, concepto, String(valor), comentario || '', mes, String(anio)]],
+          values: [[id, concepto, valorFormateado, comentario || '', mes, String(anio)]],
         },
       })
 
@@ -90,13 +91,14 @@ export default async function handler(req, res) {
       }
 
       const sheetRow = rowIndex + 1 // Google Sheets es 1-indexed
+      const valorFormateado = String(valor).replace('.', ',')
 
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${SHEET_TAB}!A${sheetRow}:F${sheetRow}`,
         valueInputOption: 'RAW',
         requestBody: {
-          values: [[id, concepto, String(valor), comentario || '', mes, String(anio)]],
+          values: [[id, concepto, valorFormateado, comentario || '', mes, String(anio)]],
         },
       })
 
