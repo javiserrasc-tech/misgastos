@@ -26,11 +26,6 @@ function rowToGasto(row) {
 }
 
 export default async function handler(req, res) {
-  const secret = req.headers['x-api-secret']
-  if (!secret || secret !== process.env.API_SECRET) {
-    return res.status(401).json({ error: 'No autorizado' })
-  }
-
   try {
     const sheets = await getSheets()
     const sheetId = process.env.GOOGLE_SHEET_ID
