@@ -1,11 +1,14 @@
 import { serialize } from 'cookie'
-import crypto from 'crypto'
 
-function hashToken(value) {
-  return crypto.createHash('sha256').update(value).digest('hex')
+async function sha256(message) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -16,15 +19,16 @@ export default function handler(req, res) {
     return res.status(401).json({ error: 'Contraseña incorrecta' })
   }
 
-  // El token de sesión es un hash de la contraseña + un salt fijo del servidor
-  const sessionToken = hashToken(process.env.APP_PASSWORD + process.env.SESSION_SECRET)
+  const sessionToken = await sha256(
+    process.env.APP_PASSWORD + process.env.SESSION_SECRET
+  )
 
   res.setHeader('Set-Cookie', serialize('session', sessionToken, {
-    httpOnly: true,   // JavaScript del navegador NO puede leerla
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 días
+    maxAge: 60 * 60 * 24 * 30,
   }))
 
   return res.status(200).json({ success: true })
