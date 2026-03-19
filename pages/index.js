@@ -100,6 +100,7 @@ export default function Home() {
 
   async function handleLogout() {
     await fetch('/api/logout', { method: 'POST' })
+    localStorage.removeItem('session')
     router.replace('/login')
   }
 
