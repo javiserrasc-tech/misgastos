@@ -290,14 +290,30 @@ option { background: var(--surface); color: var(--text); }
   padding: 0.875rem 1rem;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
   position: relative;
   transition: background 0.12s;
   outline: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 .list__item:last-child         { border-bottom: none; }
 .list__item:hover,
 .list__item:focus              { background: var(--surface-2); }
 .list__item--active            { background: var(--accent-soft) !important; }
+
+.item__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.item__content {
+  flex: 1;
+  min-width: 0;
+}
 
 .item__top {
   display: flex;
