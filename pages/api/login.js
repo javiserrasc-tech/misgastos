@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   )
 
   res.setHeader('Set-Cookie', serialize('session', sessionToken, {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
