@@ -26,6 +26,7 @@ function validarAnio(val) {
 
 export default function Home() {
   const [conceptos, setConceptos]   = useState([])
+  const [grupoMap,  setGrupoMap]    = useState({})
   const [ultimos,   setUltimos]     = useState([])
   const [form,      setForm]        = useState(defaultForm())
   const [editando,  setEditando]    = useState(null)
@@ -59,7 +60,12 @@ export default function Home() {
     try {
       const res = await fetch('/api/conceptos')
       const data = await res.json()
-      setConceptos(Array.isArray(data) ? data : [])
+      const list = Array.isArray(data) ? data : []
+      setConceptos(list)
+      // mapa nombre → color de grupo
+      const map = {}
+      list.forEach(c => { if (c.grupo) map[c.nombre] = c.grupo })
+      setGrupoMap(map)
     } catch (e) { console.error(e) }
   }
 
@@ -310,7 +316,9 @@ export default function Home() {
               <p className="empty">Aún no hay registros.</p>
             ) : (
               <ul className="list">
-                {ultimos.map(g => (
+                {ultimos.map(g => {
+                  const color = grupoMap[g.concepto] || '#e8e8ed'
+                  return (
                   <li
                     key={g.id}
                     className={`list__item ${editando === g.id ? 'list__item--active' : ''}`}
@@ -319,26 +327,31 @@ export default function Home() {
                     tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && handleEditar(g)}
                     aria-label={`Editar ${g.concepto}`}
+                    style={{ borderLeft: `3px solid ${color}` }}
                   >
-                    <div className="item__top">
-                      <span className="item__concepto">{g.concepto}</span>
-                      <span className="item__valor">
-                        {parseValor(g.valor).toFixed(2)} €
-                      </span>
-                    </div>
-                    <div className="item__bottom">
-                      <span className="item__fecha">
-                        {mesLabel(g.mes)} {g.anio}
-                      </span>
-                      {g.comentario && (
-                        <span className="item__tag">{g.comentario}</span>
-                      )}
+                    <div className="item__dot" style={{ background: color }} />
+                    <div className="item__content">
+                      <div className="item__top">
+                        <span className="item__concepto">{g.concepto}</span>
+                        <span className="item__valor">
+                          {parseValor(g.valor).toFixed(2)} €
+                        </span>
+                      </div>
+                      <div className="item__bottom">
+                        <span className="item__fecha">
+                          {mesLabel(g.mes)} {g.anio}
+                        </span>
+                        {g.comentario && (
+                          <span className="item__tag">{g.comentario}</span>
+                        )}
+                      </div>
                     </div>
                     <span className="item__hint" aria-hidden="true">
                       toca para editar
                     </span>
                   </li>
-                ))}
+                )})}
+
               </ul>
             )}
           </section>
